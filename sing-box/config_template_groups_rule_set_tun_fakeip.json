@@ -204,11 +204,7 @@
     {
       "tag": "proxy",
       "type": "selector",
-      "outbounds": [
-        "direct",
-        "All"
-      ],
-      "default": "direct"
+      "outbounds": []
     },
     {
       "tag": "google",
@@ -352,11 +348,6 @@
     },
     {
       "tag": "Others",
-      "type": "selector",
-      "outbounds": []
-    },
-    {
-      "tag": "All",
       "type": "selector",
       "outbounds": []
     },
