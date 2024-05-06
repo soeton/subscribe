@@ -30,13 +30,6 @@
         "server": "tx"
       },
       {
-        "package_name": [
-          "com.shizq.bika",
-          "com.alibaba.android.rimet"
-        ],
-        "server": "tx"
-      },
-      {
         "outbound": "any",
         "server": "tx",
         "disable_cache": true
@@ -405,6 +398,10 @@
       "inet6_address": "fdfe:dcba:9876::0/126",
       "stack": "system",
       "auto_route": true,
+      "exclude_package": [
+        "com.shizq.bika",
+        "com.alibaba.android.rimet"
+      ],
       "sniff": true,
       "platform": {
         "http_proxy": {
