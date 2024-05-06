@@ -30,6 +30,13 @@
         "server": "tx"
       },
       {
+        "package_name": [
+          "com.shizq.bika",
+          "com.alibaba.android.rimet"
+        ],
+        "server": "tx"
+      },
+      {
         "outbound": "any",
         "server": "tx",
         "disable_cache": true
@@ -206,14 +213,9 @@
       "type": "selector",
       "outbounds": [
         "direct",
-        "HongKong",
-        "TaiWan",
-        "Singapore",
-        "Japan",
-        "America",
-        "Others"
+        "All"
       ],
-      "default": "HongKong"
+      "default": "direct"
     },
     {
       "tag": "google",
@@ -357,6 +359,11 @@
     },
     {
       "tag": "Others",
+      "type": "selector",
+      "outbounds": []
+    },
+    {
+      "tag": "All",
       "type": "selector",
       "outbounds": []
     },
