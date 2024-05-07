@@ -8,35 +8,62 @@
     "servers": [
       {
         "tag": "google",
-        "address": "https://8.8.8.8/dns-query",
+        "address": "tls://8.8.4.4",
         "detour": "proxy"
       },
       {
-        "tag": "tx",
+        "tag": "local",
         "address": "https://120.53.53.53/dns-query",
         "detour": "direct"
       },
       {
         "tag": "fakeip",
         "address": "fakeip"
+      },
+      {
+        "tag": "block",
+        "address": "rcode://success"
       }
     ],
     "rules": [
+      {
+        "type": "logical",
+        "mode": "or",
+        "rules": [
+          {
+            "rule_set": [
+              "AWAvenue-Ads",
+              "geosite-category-ads-all"
+            ]
+          },
+          {
+            "domain_suffix": [
+              "appcenter.ms",
+              "app-measurement.com",
+              "firebase.io",
+              "crashlytics.com",
+              "google-analytics.com"
+            ]
+          }
+        ],
+        "disable_cache": true,
+        "server": "block"
+      },
       {
         "domain": [
           "cdn.jsdelivr.net",
           "testingcf.jsdelivr.net"
         ],
-        "server": "tx"
+        "server": "local"
       },
       {
         "outbound": "any",
-        "server": "tx",
+        "server": "local",
         "disable_cache": true
       },
       {
         "clash_mode": "Direct",
-        "server": "tx"
+        "server": "local"
       },
       {
         "clash_mode": "Global",
@@ -56,14 +83,48 @@
         "server": "google"
       }
     ],
-    "final": "tx",
+    "final": "local",
     "independent_cache": true
   },
   "route": {
     "rules": [
       {
         "port": 53,
-        "outbound": "dns-out"
+        "outbound": "dns"
+      },
+      {
+        "type": "logical",
+        "mode": "or",
+        "rules": [
+          {
+            "rule_set": [
+              "AWAvenue-Ads",
+              "geosite-category-ads-all"
+            ]
+          },
+          {
+            "domain_suffix": [
+              "appcenter.ms",
+              "app-measurement.com",
+              "firebase.io",
+              "crashlytics.com",
+              "google-analytics.com"
+            ]
+          },
+          {
+            "domain_regex": "^stun\\..+"
+          },
+          {
+            "domain_keyword": [
+              "stun",
+              "httpdns"
+            ]
+          },
+          {
+            "protocol": "stun"
+          }
+        ],
+        "outbound": "block"
       },
       {
         "ip_is_private": true,
@@ -194,6 +255,20 @@
         "type": "remote",
         "format": "binary",
         "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/youtube.srs",
+        "download_detour": "direct"
+      },
+      {
+        "tag": "AWAvenue-Ads",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://testingcf.jsdelivr.net/gh/TG-Twilight/AWAvenue-Ads-Rule@main/Filters/AWAvenue-Ads-Rule-Singbox.srs",
+        "download_detour": "direct"
+      },
+      {
+        "tag": "geosite-category-ads-all",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://testingcf.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-category-ads-all.srs",
         "download_detour": "direct"
       }
     ],
@@ -374,8 +449,12 @@
       "type": "direct"
     },
     {
-      "tag": "dns-out",
+      "tag": "dns",
       "type": "dns"
+    },
+    {
+      "tag": "block",
+      "type": "block"
     },
     {
       "tag": "loop",
@@ -394,6 +473,7 @@
       "auto_route": true,
       "exclude_package": [
         "com.shizq.bika",
+        "com.jingdong.app.mall",
         "com.alibaba.android.rimet"
       ],
       "sniff": true,
