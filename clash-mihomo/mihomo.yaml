@@ -1,7 +1,6 @@
 # 机场订阅，名称不能重复
 proxy-providers:
   provide:
-    <<: *p
     type: http
     interval: 3600
     health-check:
