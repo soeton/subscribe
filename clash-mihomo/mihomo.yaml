@@ -1,3 +1,112 @@
+# 机场订阅，名称不能重复
+proxy-providers:
+  provide:
+    <<: *p
+    type: http
+    interval: 3600
+    health-check:
+      enable: true
+      url: https://www.gstatic.com/generate_204
+      interval: 60
+    proxy: direct
+    url: ""  
+
+# 全局配置
+allow-lan: true # 允许局域网连接
+bind-address: "*" # 绑定 IP 地址，仅作用于 allow-lan 为 true，'*'表示所有地址
+lan-allowed-ips: # 允许连接的 IP 地址段，仅作用于 allow-lan 为 true, 默认值为 0.0.0.0/0 和::/0
+  - 0.0.0.0/0
+  - ::/0
+skip-auth-prefixes: # 设置跳过验证的 IP 段
+  - 127.0.0.1/8
+  - ::1/128
+mode: rule # 此项拥有默认值，默认为规则模式
+log-level: info # 日志等级 silent/error/warning/info/debug
+ipv6: false
+find-process-mode: off # 控制是否让 Clash 去匹配进程
+profile: # 策略组选择和fakeip缓存
+  store-selected: true
+  # 储存 API 对策略组的选择，以供下次启动时使用
+  store-fake-ip: true
+  # 储存 fakeip 映射表，域名再次发生连接时，使用原有映射地址
+unified-delay: true # 开启统一延迟时，会计算 RTT，以消除连接握手等带来的不同类型节点的延迟差异
+tcp-concurrent: true # TCP并发
+global-client-fingerprint: chrome # 全局客户端指纹
+
+# 端口
+port: 8080 # HTTP(S) 代理服务器端口
+socks-port: 1080 # SOCKS5 代理端口
+mixed-port: 7890 # HTTP(S) 和 SOCKS 代理混合端口
+redir-port: 7891 # 透明代理端口，用于 Linux 和 MacOS
+tproxy-port: 7892 # Transparent proxy server port for Linux (TProxy TCP and TProxy UDP)
+global-ua: clash.meta # 自定义外部资源下载时使用的的 UA，默认为 clash.meta
+etag-support: true # 外部资源下载的 ETag 支持，默认为 true
+geodata-mode: false # 可选 true/false,true为 dat,false为mmdb
+geodata-loader: memconservative # standard：标准加载器,memconservative：专为内存受限 (小内存) 设备优化的加载器 (默认值)
+geo-auto-update: false # 自动更新 GEO
+geo-update-interval: 24 # 更新间隔，单位为小时
+geox-url:
+  geoip: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat"
+  geosite: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat"
+  mmdb: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.metadb"
+
+# 流量嗅探
+sniffer:
+  enable: true
+  sniff:
+    HTTP:
+      ports: [80, 8080-8880]
+      override-destination: true
+    TLS:
+      ports: [443, 8443]
+    QUIC:
+      ports: [443, 8443]
+  skip-domain:
+    - "Mijia Cloud"
+    - "+.push.apple.com"
+  
+# DNS模块
+dns:
+  enable: true
+  ipv6: false  # 允许解析 IPv6
+  listen: 0.0.0.0:1053
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  prefer-h3: true
+  use-system-hosts: false
+  use-hosts: false
+  fake-ip-filter-mode: blacklist
+  fake-ip-filter:
+    - "+.lan"
+    - "+.local"
+    - "rule-set:cn_domain"
+    - "rule-set:private_domain"
+    - "rule-set:fakeip-filter"
+  default-nameserver:
+    - 127.0.0.1:5353
+  proxy-server-nameserver:
+    - 127.0.0.1:5353
+  nameserver:
+    - 127.0.0.1:5353
+  nameserver-policy:
+    "rule-set:cn_domain,private_domain,rule-direct_domain":
+      - "https://dns.alidns.com/dns-query"
+      - "https://doh.pub/dns-query" 
+    "rule-set:geolocation-!cn,rule-proxy_domain":
+      - "https://dns.cloudflare.com/dns-query"
+      - "https://dns.google/dns-query"
+      
+# Tun配置
+tun:
+  enable: true
+  stack: system # gvisor/mixed
+  dns-hijack:
+    - "any:53"
+    - "tcp://any:53"
+  auto-route: true # 自动设置全局路由，可以自动将全局流量路由进入 tun 网卡
+  auto-redirect: true # 仅支持 Linux，自动配置 iptables/nftables 以重定向 TCP 连接，需要auto-route已启用
+  auto-detect-interface: true # 自动选择流量出口接口，多出口网卡同时连接的设备建议手动指定出口网卡
+
 proxies:
 - name: "direct"
   type: direct
@@ -24,6 +133,7 @@ proxy-groups:
   - {name: 🌐 全部节点, type: select, include-all: true}
 
 rules:
+  - IP-CIDR, 198.18.0.1/16, REJECT, no-resolve
   - RULE-SET,openai,OpenAi
   - RULE-SET,tiktok_domain,TikTok
   - RULE-SET,disney_domain,Disney
@@ -59,6 +169,7 @@ rule-providers:
   google_domain: {!!merge <<: *domain, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/google.mrs"}
   tiktok_domain: {!!merge <<: *domain, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/tiktok.mrs"}
   disney_domain: {!!merge <<: *domain, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/disney.mrs"}
+  fakeip-filter: {!!merge <<: *domain, url: "https://github.com/DustinWin/ruleset_geodata/releases/download/mihomo-ruleset/fakeip-filter.mrs"}
   netflix_domain: {!!merge <<: *domain, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/netflix.mrs"}
   telegram_domain: {!!merge <<: *domain, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/telegram.mrs"}
   geolocation-!cn: {!!merge <<: *domain, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/geolocation-!cn.mrs"}
