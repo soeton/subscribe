@@ -1,0 +1,69 @@
+proxies:
+- name: "direct"
+  type: direct
+  udp: true
+ 
+# 锚点
+pr: &pr {type: select, proxies: [proxy, 🇭🇰 香港节点, 🇨🇳 台湾节点, 🇺🇸 美国节点, 🇯🇵 日本节点, 🇩🇪 德国节点, 🇳🇱 荷兰节点, 🌐 全部节点, direct]}
+# 策略组
+proxy-groups:
+  - {name: proxy, type: select, proxies: [🇭🇰 香港节点, 🇨🇳 台湾节点, 🇺🇸 美国节点, 🇯🇵 日本节点, 🇩🇪 德国节点, 🇳🇱 荷兰节点, 🌐 全部节点, direct],icon: https://raw.githubusercontent.com/sunfing/iNg/main/Icons/GeneralIcons/ClashMeta.png}
+  - {name: Google,!!merge <<: *pr,icon: https://raw.githubusercontent.com/sunfing/iNg/main/Icons/GeneralIcons/Google.png}
+  - {name: OpenAi,!!merge <<: *pr,icon: https://raw.githubusercontent.com/sunfing/iNg/main/Icons/GeneralIcons/Copilot.png}
+  - {name: TikTok,!!merge <<: *pr,icon: https://raw.githubusercontent.com/sunfing/iNg/main/Icons/GeneralIcons/TikTok.png}
+  - {name: Disney,!!merge <<: *pr,icon: https://raw.githubusercontent.com/sunfing/iNg/main/Icons/GeneralIcons/Netflix.png}
+  - {name: Netflix,!!merge <<: *pr,icon: https://raw.githubusercontent.com/sunfing/iNg/main/Icons/GeneralIcons/Disney+.png}
+  - {name: Telegram,!!merge <<: *pr,icon: https://raw.githubusercontent.com/sunfing/iNg/main/Icons/GeneralIcons/Telegram.png}
+  - {name: 🚧 兜底,!!merge <<: *pr}
+  - {name: 🇭🇰 香港节点, type: select, include-all: true, filter: "(?i)港|hk|hongkong"}
+  - {name: 🇨🇳 台湾节点, type: select, include-all: true, filter: "(?i)台|tw|taiwan"}
+  - {name: 🇯🇵 日本节点, type: select, include-all: true, filter: "(?i)日|jp|japan"}
+  - {name: 🇺🇸 美国节点, type: select, include-all: true, filter: "(?i)美|us|unitedstates"}
+  - {name: 🇩🇪 德国节点, type: select, include-all: true, filter: "(?i)德|de|Deutschland"}
+  - {name: 🇳🇱 荷兰节点, type: select, include-all: true, filter: "(?i)荷|nl|Nederland"}
+  - {name: 🌐 全部节点, type: select, include-all: true}
+
+rules:
+  - RULE-SET,openai,OpenAi
+  - RULE-SET,tiktok_domain,TikTok
+  - RULE-SET,disney_domain,Disney
+  - RULE-SET,netflix_domain,Netflix
+  - RULE-SET,telegram_domain,Telegram
+  - RULE-SET,google_domain,Google
+  - RULE-SET,rule-direct_domain,direct
+  - RULE-SET,geolocation-!cn,proxy
+  - RULE-SET,rule-proxy_domain,proxy
+  - RULE-SET,private_domain,direct
+  - RULE-SET,cn_domain,direct
+
+  - RULE-SET,netflix_ip,Netflix,no-resolve
+  - RULE-SET,telegram_ip,Telegram,no-resolve
+  - RULE-SET,google_ip,Google,no-resolve
+  - RULE-SET,private_ip,direct,no-resolve
+  - RULE-SET,cn_ip,direct,no-resolve
+
+  - MATCH,🚧 兜底
+
+
+rule-anchor:
+  ip: &ip {type: http, interval: 86400, behavior: ipcidr, format: mrs}
+  domain: &domain {type: http, interval: 86400, behavior: domain, format: mrs}
+  list: &list {type: http, interval: 86400, behavior: domain, format: text}
+  class: &class {type: http, interval: 86400, behavior: classical, format: text}
+rule-providers:
+  cn_domain: {!!merge <<: *domain, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/cn.mrs"}
+  private_domain: {!!merge <<: *domain, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/private.mrs"}
+  rule-direct_domain: {!!merge <<: *list, url: "https://testingcf.jsdelivr.net/gh/Maple-Ling/maple@main/Mihomo/rule-direct.list"}
+  rule-proxy_domain: {!!merge <<: *list, url: "https://testingcf.jsdelivr.net/gh/Maple-Ling/maple@main/Mihomo/rule-proxy.list"}
+  openai: {!!merge <<: *domain, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/openai.mrs"}
+  google_domain: {!!merge <<: *domain, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/google.mrs"}
+  tiktok_domain: {!!merge <<: *domain, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/tiktok.mrs"}
+  disney_domain: {!!merge <<: *domain, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/disney.mrs"}
+  netflix_domain: {!!merge <<: *domain, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/netflix.mrs"}
+  telegram_domain: {!!merge <<: *domain, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/telegram.mrs"}
+  geolocation-!cn: {!!merge <<: *domain, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/geolocation-!cn.mrs"}
+  cn_ip: {!!merge <<: *ip, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/cn.mrs"}
+  private_ip: {!!merge <<: *ip, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/private.mrs"}
+  google_ip: {!!merge <<: *ip, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/google.mrs"}
+  netflix_ip: {!!merge <<: *ip, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/netflix.mrs"}
+  telegram_ip: {!!merge <<: *ip, url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/telegram.mrs"}
